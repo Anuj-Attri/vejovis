@@ -2,7 +2,7 @@
 """
 Created on Sat Aug  7 21:53:03 2021
 
-@author: Dev
+@author: Tejaswini, Dev & Anuj
 """
 
 import os
@@ -66,10 +66,11 @@ def Remove_Baseline(y):
     return y_corrected
     
 
-"""
+
 # EXECUTED THIS JUST ONCE TO FIND THE OPTIMAL SIGNALS(OptimalData.txt)
-==============================================================================
+#==============================================================================
 # Creating a new text file to store the most optimal signals
+
 file = open("OptimalData.txt", "w")
 
 # Using the Skewness SQI(SSQI) to find the most optimal signal segment
@@ -84,10 +85,10 @@ for i in range(0, len(subject_id)):
     file.write(filename+"\n")
     
 file.close()
-==============================================================================    
-"""
 
-"""
+
+#==============================================================================    
+
 # EXECUTED THIS JUST ONCE TO CLEAN THE SIGNALS AND SAVE THEM (Filtered Data)
 # =============================================================================
 # Reading the OptimalData.txt file to find the best signals
@@ -170,7 +171,7 @@ for i in range(0, 219):
     f.close()
 
 # =============================================================================
-""" 
+
         
     
 
