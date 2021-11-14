@@ -32,7 +32,10 @@ for i in range(len(signals)):
     f = open(loc, "r")
     y = list(f.read().split(","))
     
-    # Introducing a try/except statement for error handling
+    '''
+    Introducing a try/except statement for Type conversion 
+    and Missing data error handling.
+    '''    
     try:
         for i in range(0, len(y)):
             y[i] = float(y[i])
@@ -94,13 +97,21 @@ for i in range(len(signals)):
     plt.title("FFT of the filtered signal")
     plt.show()
     """
-
-    P_12 = peaks_values[0]/peaks_values[1]
-    f_12 = peaks_position[0]/peaks_position[1]
+    try:
+        P_12 = peaks_values[0]/peaks_values[1]
+        f_12 = peaks_position[0]/peaks_position[1]
+        
+    except:
+        P_12 = float("NaN")     # Assign NaN value in case of missing data
+        f_12 = float("NaN")
     
-    # Not present for every signal
-    # P_13 = peaks_values[0]/peaks_values[2]
-    # f_13 = peaks_position[0]/peaks_position[2]
+    try:
+        P_13 = peaks_values[0]/peaks_values[2]
+        f_13 = peaks_position[0]/peaks_position[2]
+        
+    except:
+        P_13 = float("NaN")     # Assign NaN value in case of missing data
+        f_13 = float("NaN")
     
     fmax = peaks_position[0]
     mag_fmax = peaks_values[0]
