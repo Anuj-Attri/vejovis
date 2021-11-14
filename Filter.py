@@ -2,7 +2,7 @@
 """
 Created on Sat Aug  7 21:53:03 2021
 
-@author: Tejaswini, Dev & Anuj
+@authors: Tejaswini, Dev & Anuj
 """
 
 import os
