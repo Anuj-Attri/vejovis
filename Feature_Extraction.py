@@ -249,7 +249,108 @@ for i in range(len(signals)):
     
     # =========================================================================
     # FIRST AND SECOND DERIVATIVE FEATURES
-    # Tejaswini put stuff here
+    m=y.shape[0]
+    x = np.linspace(0, 6*np.pi, m)
+
+    cs = CubicSpline(x, y)
+    d = cs(x,1)
+    dd = cs(x,2)
+
+    kr1 = KernelReg(y,x,'c')
+    kr2 = KernelReg(d,x,'c')
+    kr3 = KernelReg(dd,x,'c')
+    f, g = kr1.fit(x)
+    dy, dg = kr2.fit(x)
+    ddy, ddg = kr3.fit(x)
+
+    '''
+    #Plotting derivatives
+    fig = plt.figure(figsize=(15,5))
+    ax = fig.add_subplot(1, 1, 1)
+    plt.figure(figsize=(15,5))
+    ax.plot(x, f)
+    ax.plot(x, dy)
+    ax.plot(x, ddy)
+    plt.show()
+    '''
+
+    #Finding features
+    from scipy.signal import find_peaks
+    peak1, _ = find_peaks(dy, distance = 800)      #array of peaks of first derivative
+    peak2, _ = find_peaks(ddy, distance = 800)     #array of peaks of second derivative
+    peak3, _ = find_peaks(y, distance = 800)       #array of peaks of ppg
+    valley1, _ = find_peaks(-dy, distance = 800)   #array of valleys of first derivative
+    valley2, _ = find_peaks(-ddy, distance = 800)  #array of valleys of second derivative
+    valley3, _ = find_peaks(-y, distance = 800)    ##array of valleys of ppg
+
+    '''
+    #Plotting features
+    plt.figure(figsize=(15,5))
+
+    plt.plot(peak1, dy[peak1], "yo");
+    plt.plot(valley1, dy[valley1], "sy");
+    plt.plot(dy, label='$First Derivative$');
+
+    plt.plot(peak2, ddy[peak2], "go");
+    plt.plot(valley2, ddy[valley2], "sg");
+    plt.plot(ddy, label='$Second Derivative$');
+
+    plt.plot(peak3, y[peak3], "bo");
+    plt.plot(valley3, y[valley3], "sb");
+    plt.plot(y, label='$PPG Signal$');
+
+    plt.grid()
+    plt.legend()
+    plt.show()
+    '''
+
+    #Feature values
+    a1 = dy[peak1[0]]               # first maximum peak from the first derivative
+    p = peak1[0]
+
+    for i in peak2:                 #first maximum peak from the second derivative after a1
+        if i>peak1[0]:
+            a2 = ddy[i]
+            q = i
+            break
+
+    for i in valley1:               #first minimum peak from the first derivative after a1
+        if i>peak1[0]:
+            b1 = dy[i]
+            r = i
+            break
+
+    for i in valley2:               #first minimum peak from the second derivative after a2
+        if i>q:
+            b2 = ddy[i]
+            s = i
+            break
+
+    for i in valley3:               #foot of ppg
+        if i>p:
+            f1 = i
+            break
+
+    for i in valley3:               #foot of ppg
+        if i>q:
+            f2 = i
+            break
+
+    ta1 = f1 - p                 #time interval from the foot to the time at which a1 occurred
+    ta2 = f2 - q                 #time interval from the foot to the time at which a2 occurred
+    tb1 = f1 - r                 #time interval from the foot to the time at which b1 occurred
+    tb2 = f2 - s                 #time interval from the foot to the time at which b2 occurred
+    tpp = peak3[1]-peak3[0]      #peak to peak time interval
+
+    #Ratios
+    b2_a2 = b2/a2
+    b1_a1 = b1/a1
+    ta1_tpp = ta1/tpp
+    ta2_tpp = ta2/tpp
+    tb1_tpp = tb1/tpp
+    tb2_tpp = tb2/tpp
+    ta12_tpp = (ta1-ta2)/tpp
+    tb12_tpp = (tb1-tb2)/tpp
     # =========================================================================
     
     # =========================================================================
