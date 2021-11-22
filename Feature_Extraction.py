@@ -15,6 +15,9 @@ from scipy import stats
 import pandas as pd
 from antropy import spectral_entropy
 import glob
+import re
+from scipy.interpolate import CubicSpline
+from statsmodels.nonparametric.kernel_regression import KernelReg
 
 datafile = open(os.getcwd() + "\\OptimalData.txt")
 signals = datafile.read()
@@ -249,108 +252,170 @@ for i in range(len(signals)):
     
     # =========================================================================
     # FIRST AND SECOND DERIVATIVE FEATURES
-    m=y.shape[0]
-    x = np.linspace(0, 6*np.pi, m)
+    
+def derivative_features_extractor(loc):
+    derivative_features = {
+    "First_derivative": {
+        "Peaks":[],
+        "Valleys": []},
+    "Second_derivative": {
+        "Peaks":[],
+        "Valleys": []},
+    "Time_intervals": {
+        "Peak_to_peak":[],
+        "First_derivative_peak": [],
+        "Second_derivative_peak": [],
+        "First_derivative_valley": [],
+        "Second_derivative_valley": []},
+    "Ratios": {
+        "b1_a1":[],
+        "b2_a2": [],
+        "ta1_tpp": [],
+        "ta2_tpp": [],
+        "tb1_tpp": [],
+        "tb2_tpp": [],
+        "ta12_tpp": [],
+        "tb12_tpp": []} 
+    }
+    
+    # Create an empty list to store the extracted features
+    for i in range(len(signals)):
+        loc = os.getcwd() + "\\Perfect PPG Data\\" + signals[i]
+        f = open(loc, "r")
+        y = list(f.read().split(","))
+        
+        try:
+            for i in range(0, len(y)):
+            y[i] = float(y[i])
+            
+        except: continue
+        
+        m=y.shape[0]
+        x = np.linspace(0, 2.1, m)
 
-    cs = CubicSpline(x, y)
-    d = cs(x,1)
-    dd = cs(x,2)
+        cs = CubicSpline(x, y)
+        d = cs(x,1)
+        dd = cs(x,2)
 
-    kr1 = KernelReg(y,x,'c')
-    kr2 = KernelReg(d,x,'c')
-    kr3 = KernelReg(dd,x,'c')
-    f, g = kr1.fit(x)
-    dy, dg = kr2.fit(x)
-    ddy, ddg = kr3.fit(x)
+        kr1 = KernelReg(y,x,'c')
+        kr2 = KernelReg(d,x,'c')
+        kr3 = KernelReg(dd,x,'c')
+        f, g = kr1.fit(x)
+        dy, dg = kr2.fit(x)
+        ddy, ddg = kr3.fit(x)
 
-    '''
-    #Plotting derivatives
-    fig = plt.figure(figsize=(15,5))
-    ax = fig.add_subplot(1, 1, 1)
-    plt.figure(figsize=(15,5))
-    ax.plot(x, f)
-    ax.plot(x, dy)
-    ax.plot(x, ddy)
-    plt.show()
-    '''
+        '''
+        #Plotting derivatives
+        fig = plt.figure(figsize=(15,5))
+        ax = fig.add_subplot(1, 1, 1)
+        plt.figure(figsize=(15,5))
+        ax.plot(x, f)
+        ax.plot(x, dy)
+        ax.plot(x, ddy)
+        plt.show()
+        '''
 
-    #Finding features
-    from scipy.signal import find_peaks
-    peak1, _ = find_peaks(dy, distance = 800)      #array of peaks of first derivative
-    peak2, _ = find_peaks(ddy, distance = 800)     #array of peaks of second derivative
-    peak3, _ = find_peaks(y, distance = 800)       #array of peaks of ppg
-    valley1, _ = find_peaks(-dy, distance = 800)   #array of valleys of first derivative
-    valley2, _ = find_peaks(-ddy, distance = 800)  #array of valleys of second derivative
-    valley3, _ = find_peaks(-y, distance = 800)    ##array of valleys of ppg
+        #Finding features
+        peak1, _ = find_peaks(dy, distance = 800)      #array of peaks of first derivative
+        peak2, _ = find_peaks(ddy, distance = 800)     #array of peaks of second derivative
+        peak3, _ = find_peaks(y, distance = 800)       #array of peaks of ppg
+        valley1, _ = find_peaks(-dy, distance = 800)   #array of valleys of first derivative
+        valley2, _ = find_peaks(-ddy, distance = 800)  #array of valleys of second derivative
+        valley3, _ = find_peaks(-y, distance = 800)    ##array of valleys of ppg
 
-    '''
-    #Plotting features
-    plt.figure(figsize=(15,5))
+        '''
+        #Plotting features
+        plt.figure(figsize=(15,5))
 
-    plt.plot(peak1, dy[peak1], "yo");
-    plt.plot(valley1, dy[valley1], "sy");
-    plt.plot(dy, label='$First Derivative$');
+        plt.plot(peak1, dy[peak1], "yo");
+        plt.plot(valley1, dy[valley1], "sy");
+        plt.plot(dy, label='$First Derivative$');
 
-    plt.plot(peak2, ddy[peak2], "go");
-    plt.plot(valley2, ddy[valley2], "sg");
-    plt.plot(ddy, label='$Second Derivative$');
+        plt.plot(peak2, ddy[peak2], "go");
+        plt.plot(valley2, ddy[valley2], "sg");
+        plt.plot(ddy, label='$Second Derivative$');
 
-    plt.plot(peak3, y[peak3], "bo");
-    plt.plot(valley3, y[valley3], "sb");
-    plt.plot(y, label='$PPG Signal$');
+        plt.plot(peak3, y[peak3], "bo");
+        plt.plot(valley3, y[valley3], "sb");
+        plt.plot(y, label='$PPG Signal$');
 
-    plt.grid()
-    plt.legend()
-    plt.show()
-    '''
+        plt.grid()
+        plt.legend()
+        plt.show()
+        '''
 
-    #Feature values
-    a1 = dy[peak1[0]]               # first maximum peak from the first derivative
-    p = peak1[0]
+        #Feature values
+        a1 = dy[peak1[0]]               # first maximum peak from the first derivative
+        p = x[peak1[0]]
 
-    for i in peak2:                 #first maximum peak from the second derivative after a1
-        if i>peak1[0]:
-            a2 = ddy[i]
-            q = i
-            break
+        for i in peak2:                 #first maximum peak from the second derivative after a1
+            if i>peak1[0]:
+                a2 = ddy[i]
+                q = x[i]
+                break
 
-    for i in valley1:               #first minimum peak from the first derivative after a1
-        if i>peak1[0]:
-            b1 = dy[i]
-            r = i
-            break
+        for i in valley1:               #first minimum peak from the first derivative after a1
+            if i>peak1[0]:
+                b1 = dy[i]
+                r = x[i]
+                break
 
-    for i in valley2:               #first minimum peak from the second derivative after a2
-        if i>q:
-            b2 = ddy[i]
-            s = i
-            break
+        for i in valley2:               #first minimum peak from the second derivative after a2
+            if i>q:
+                b2 = ddy[i]
+                s = x[i]
+                break
 
-    for i in valley3:               #foot of ppg
-        if i>p:
-            f1 = i
-            break
+        for i in valley3:               #foot of ppg
+            if i>p:
+                f1 = x[i]
+                break
 
-    for i in valley3:               #foot of ppg
-        if i>q:
-            f2 = i
-            break
+        for i in valley3:               #foot of ppg
+            if i>q:
+                f2 = x[i]
+                break
 
-    ta1 = f1 - p                 #time interval from the foot to the time at which a1 occurred
-    ta2 = f2 - q                 #time interval from the foot to the time at which a2 occurred
-    tb1 = f1 - r                 #time interval from the foot to the time at which b1 occurred
-    tb2 = f2 - s                 #time interval from the foot to the time at which b2 occurred
-    tpp = peak3[1]-peak3[0]      #peak to peak time interval
+        ta1 = f1 - p                 #time interval from the foot to the time at which a1 occurred
+        ta2 = f2 - q                 #time interval from the foot to the time at which a2 occurred
+        tb1 = f1 - r                 #time interval from the foot to the time at which b1 occurred
+        tb2 = f2 - s                 #time interval from the foot to the time at which b2 occurred
+        tpp = x[peak3[1]]-x[peak3[0]]      #peak to peak time interval
 
-    #Ratios
-    b2_a2 = b2/a2
-    b1_a1 = b1/a1
-    ta1_tpp = ta1/tpp
-    ta2_tpp = ta2/tpp
-    tb1_tpp = tb1/tpp
-    tb2_tpp = tb2/tpp
-    ta12_tpp = (ta1-ta2)/tpp
-    tb12_tpp = (tb1-tb2)/tpp
+        #Ratios
+        b2_a2 = b2/a2
+        b1_a1 = b1/a1
+        ta1_tpp = ta1/tpp
+        ta2_tpp = ta2/tpp
+        tb1_tpp = tb1/tpp
+        tb2_tpp = tb2/tpp
+        ta12_tpp = (ta1-ta2)/tpp
+        tb12_tpp = (tb1-tb2)/tpp
+
+        #Appending values
+        derivative_features["First_derivative"]["Peaks"].append(a1)
+        derivative_features["First_derivative"]["Valleys"].append(b1)
+        derivative_features["Second_derivative"]["Peaks"].append(a2)
+        derivative_features["Second_derivative"]["Valleys"].append(b2)
+        derivative_features["Time_intervals"]["Peak_to_peak"].append(tpp)
+        derivative_features["Time_intervals"]["First_derivative_peak"].append(ta1)
+        derivative_features["Time_intervals"]["Second_derivative_peak"].append(ta2)
+        derivative_features["Time_intervals"]["First_derivative_valley"].append(tb1)
+        derivative_features["Time_intervals"]["Second_derivative_valley"].append(tb2)
+        derivative_features["Ratios"]["b1_a1"].append(b1_a1)
+        derivative_features["Ratios"]["b2_a2"].append(b2_a2)
+        derivative_features["Ratios"]["ta1_tpp"].append(ta1_tpp)
+        derivative_features["Ratios"]["ta2_tpp"].append(ta2_tpp)
+        derivative_features["Ratios"]["tb1_tpp"].append(tb1_tpp)
+        derivative_features["Ratios"]["tb2_tpp"].append(tb2_tpp)
+        derivative_features["Ratios"]["ta12_tpp"].append(ta12_tpp)
+        derivative_features["Ratios"]["tb12_tpp"].append(tb12_tpp)
+
+return derivative_features
+
+file_loc = glob.glob(os.getcwd() + "\\Perfect PPG Data" + "\\*.txt")
+derivative_ppg_features = derivative_features_extractor(file_loc)
+    
     # =========================================================================
     
     # =========================================================================
