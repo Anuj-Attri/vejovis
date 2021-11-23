@@ -16,7 +16,7 @@ import glob
 # import re
 # import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline
-from statsmodels.nonparametric.kernel_regression import KernelReg
+from scipy.signal import savgol_filter
 
 datafile = open(os.getcwd() + "\\OptimalData.txt")
 signals = datafile.read()
@@ -277,20 +277,27 @@ def derivative_features_extractor(loc):
         m=len(y)
         x = np.linspace(0, 2.1, m)
 
-        cs = CubicSpline(x, y)
-        d = cs(x,1)
-        dd = cs(x,2)
+        dy = np.zeros(y.shape,np.float)
+        dy[0:-1] = np.diff(y)/np.diff(x)
+        dy[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
+        dy = savgol_filter(dy, 351, 3)
 
-        kr1 = KernelReg(y,x,'c')
-        kr2 = KernelReg(d,x,'c')
-        kr3 = KernelReg(dd,x,'c')
-        f, g = kr1.fit(x)
-        dy, dg = kr2.fit(x)
-        ddy, ddg = kr3.fit(x)
-        
-        y = np.array(y)
-        dy = np.array(dy)
-        ddy = np.array(ddy)
+
+        ddy = np.zeros(dy.shape,np.float)
+        ddy[0:-1] = np.diff(dy)/np.diff(x)
+        ddy[-1] = (dy[-1] - dy[-2])/(x[-1] - x[-2])
+        ddy = savgol_filter(ddy, 355, 3)
+
+        '''
+        #Plotting derivatives
+        fig = plt.figure(figsize=(15,5))
+        img = fig.add_subplot(1, 1, 1)
+        img.plot(x,y, label='$PPG signal$')
+        img.plot(x,dy, label='$First Derivative$')
+        img.plot(x,ddy, label='$Second Derivative$')
+        img.legend()
+        plt.show()
+        '''
         
         #Finding features
         peak1, _ = find_peaks(dy, distance = 800)      #array of peaks of first derivative
