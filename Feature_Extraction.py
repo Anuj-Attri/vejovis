@@ -15,7 +15,7 @@ from antropy import spectral_entropy
 import glob
 # import re
 # import matplotlib.pyplot as plt
-from scipy.interpolate import CubicSpline
+# from scipy.interpolate import CubicSpline
 from scipy.signal import savgol_filter
 
 datafile = open(os.getcwd() + "\\OptimalData.txt")
