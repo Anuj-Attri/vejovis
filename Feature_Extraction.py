@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Nov  5 19:42:50 2021
-
 @author: Tejaswini, Dev & Anuj
 """
 
@@ -69,7 +67,7 @@ def feature_extractor(loc):
     temp_list = []  # For temporary data storage
 
 
-    for index in loc:
+    for index in loc:x
         
         # Indexing one signal sample at a time
         file = open(index)

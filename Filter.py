@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Aug  7 21:53:03 2021
 
+"""
 @authors: Tejaswini, Dev & Anuj
 """
 
@@ -138,9 +136,7 @@ for i in range(0, 1):
     # =================== FILTERING SECTION ENDS HERE =========================
     
 # =============================================================================
-"""
 
-"""
 # BASELINE REMOVAL FROM THE SIGNALS AND SAVING THEM
 
 # =============================================================================
